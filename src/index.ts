@@ -140,7 +140,7 @@ client.on('interactionCreate', async interaction => {
         break;
       }
       const prompt = list.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 期限: ${getDueDate(p)} | 担当: ${getAssignees(p).join(', ')}`).join('\n');
-      const ai = await openai.chat.completions.create({ model: 'gpt-4.1nano', messages: [{ role: 'user', content: `Tasks for ${assignee}:\n${prompt}\nAs a project manager, provide action items:` }] });
+      const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: `Tasks for ${assignee}:\n${prompt}\nAs a project manager, provide action items:` }] });
       await cmd.editReply([header, ai.choices[0].message?.content ?? ''].join('\n'));
       break;
     }
@@ -171,7 +171,7 @@ client.on('interactionCreate', async interaction => {
         break;
       }
       const prompt = pages.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 期限: ${getDueDate(p)} | 担当: ${getAssignees(p).join(', ')}`).join('\n');
-      const ai = await openai.chat.completions.create({ model: 'gpt-4.1nano', messages: [{ role: 'user', content: `Tasks due this week:\n${prompt}\nAs a PM, suggest next steps:` }] });
+      const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: `Tasks due this week:\n${prompt}\nAs a PM, suggest next steps:` }] });
       await cmd.editReply([header, ai.choices[0].message?.content ?? ''].join('\n'));
       break;
     }
