@@ -506,13 +506,11 @@ export default function SelectGuildPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-4 flex-1">
                     {guild.icon ? (
-                      <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 ${guild.hasBot ? 'bg-emerald-100 border-emerald-100' : 'bg-blue-100 border-blue-100'}`}>
-                        <img
-                          src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-                          alt={guild.name}
-                          className="w-12 h-12 rounded-xl"
-                        />
-                      </div>
+                      <img
+                        src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+                        alt={guild.name}
+                        className="w-12 h-12 rounded-xl"
+                      />
                     ) : (
                       <div className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border-2 ${guild.hasBot ? 'bg-emerald-100 border-emerald-100' : 'bg-blue-100 border-blue-100'}`}>
                         <span className="text-white font-bold text-2xl">

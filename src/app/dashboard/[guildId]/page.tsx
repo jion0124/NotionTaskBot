@@ -241,7 +241,7 @@ export default function DashboardPage() {
       badge: guildConfig?.notion_api_key ? "設定済み" : "未設定",
       badgeColor: guildConfig?.notion_api_key ? "bg-emerald-100 text-emerald-700 border-emerald-200" : "bg-amber-100 text-amber-700 border-amber-200",
       buttonText: guildConfig?.notion_api_key ? "設定を確認" : "設定を開始",
-      buttonVariant: guildConfig?.notion_api_key ? "outline" : "default" as const,
+      buttonVariant: (guildConfig?.notion_api_key ? "outline" : "default") as "outline" | "default",
     },
     {
       title: "コマンド一覧",
@@ -251,7 +251,7 @@ export default function DashboardPage() {
       badge: `${IMPLEMENTED_COMMANDS.length}個`,
       badgeColor: "bg-blue-100 text-blue-700 border-blue-200",
       buttonText: "詳細を確認",
-      buttonVariant: "outline" as const,
+      buttonVariant: "outline" as "outline" | "default",
     },
   ];
 
