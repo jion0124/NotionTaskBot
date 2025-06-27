@@ -157,7 +157,10 @@ class ErrorLogger {
     try {
       // 外部ログサービスへの送信処理
       // 例: Sentry, LogRocket, カスタムAPIなど
-      await fetch('/api/log-error', {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:10000';
+      const url = `${baseUrl}/api/log-error`;
+      
+      await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(errorInfo),
