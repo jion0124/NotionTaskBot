@@ -1,0 +1,325 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.75rem;
+    --success: 142.1 76.2% 36.3%;
+    --success-foreground: 355.7 100% 97.3%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+    --success: 142.1 70.6% 45.3%;
+    --success-foreground: 144.9 80.4% 10%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 48 96% 89%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    /* パフォーマンス最適化 */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* スクロール最適化 */
+    scroll-behavior: smooth;
+    /* タッチ最適化 */
+    -webkit-tap-highlight-color: transparent;
+    /* フォント最適化 */
+    font-feature-settings: "rlig"1, "calt"1;
+  }
+
+  /* フォーカス最適化 */
+  *:focus {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /* スクロールバー最適化 */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground));
+    border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--foreground));
+  }
+}
+
+@layer components {
+
+  /* ローディングアニメーション最適化 */
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* フェードインアニメーション */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  /* トランジション最適化 */
+  .transition-optimized {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* カードホバー最適化 */
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* グラデーション背景 */
+  .bg-gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.8) 100%);
+  }
+
+  .bg-gradient-secondary {
+    background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--muted)) 100%);
+  }
+
+  .bg-gradient-success {
+    background: linear-gradient(135deg, hsl(var(--success)) 0%, hsl(var(--success) / 0.8) 100%);
+  }
+
+  .bg-gradient-warning {
+    background: linear-gradient(135deg, hsl(var(--warning)) 0%, hsl(var(--warning) / 0.8) 100%);
+  }
+
+  /* カードスタイル改善 */
+  .card-modern {
+    @apply rounded-xl border-0 shadow-lg bg-white/80 backdrop-blur-sm;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .card-modern:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* ボタンスタイル改善 */
+  .btn-primary {
+    @apply bg-gradient-primary text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-all duration-200;
+  }
+
+  .btn-primary:hover {
+    @apply shadow-lg;
+  }
+
+  .btn-secondary {
+    @apply bg-gradient-secondary text-foreground font-semibold px-6 py-3 rounded-lg shadow-md transition-all duration-200;
+  }
+
+  .btn-secondary:hover {
+    @apply shadow-lg;
+  }
+
+  .btn-success {
+    @apply bg-gradient-success text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-all duration-200;
+  }
+
+  .btn-success:hover {
+    @apply shadow-lg;
+  }
+
+  /* 入力フィールド改善 */
+  .input-modern {
+    @apply rounded-lg border-2 border-gray-200 px-4 py-3 transition-all duration-200;
+  }
+
+  .input-modern:focus {
+    @apply border-primary ring-2 ring-primary/20;
+  }
+
+  /* バッジスタイル */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-primary {
+    @apply badge bg-blue-100 text-blue-600 border border-blue-200;
+  }
+
+  .badge-success {
+    @apply badge bg-green-100 text-green-600 border border-green-200;
+  }
+
+  .badge-warning {
+    @apply badge bg-yellow-100 text-yellow-700 border border-yellow-200;
+  }
+
+  .badge-secondary {
+    @apply badge bg-gray-100 text-gray-700 border border-gray-200;
+  }
+
+  /* アイコン付きボタン */
+  .btn-icon {
+    @apply inline-flex items-center gap-2;
+  }
+
+  /* ステータスインジケーター */
+  .status-indicator {
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .status-online {
+    @apply status-indicator bg-green-100 text-green-600;
+  }
+
+  .status-offline {
+    @apply status-indicator bg-gray-100 text-gray-500;
+  }
+
+  .status-warning {
+    @apply status-indicator bg-yellow-100 text-yellow-700;
+  }
+
+  /* セクション区切り */
+  .section-divider {
+    @apply border-t border-gray-200 my-8;
+  }
+
+  /* ページヘッダー */
+  .page-header {
+    @apply mb-8 text-center;
+  }
+
+  .page-title {
+    @apply text-4xl font-bold text-gray-900 mb-4;
+  }
+
+  .page-description {
+    @apply text-lg text-gray-600 max-w-2xl mx-auto;
+  }
+}
+
+@layer utilities {
+
+  /* パフォーマンス最適化ユーティリティ */
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .transform-gpu {
+    transform: translateZ(0);
+  }
+
+  /* テキスト最適化 */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* スペーシング改善 */
+  .space-y-modern>*+* {
+    margin-top: 1.5rem;
+  }
+
+  .space-x-modern>*+* {
+    margin-left: 1.5rem;
+  }
+}
+
+/* ダークモード対応（削除 - 重複しているため） */
+/* @media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
+} */
