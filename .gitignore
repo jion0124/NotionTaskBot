@@ -3,7 +3,6 @@ dist/
 .env
 .env.local
 .env.*.local
-nodemon.json
 
 # 環境変数の例ファイルは含める
 !.env.example

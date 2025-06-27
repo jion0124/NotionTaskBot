@@ -1,0 +1,9 @@
+{
+  "watch": ["src/bot"],
+  "ext": "ts,js",
+  "ignore": ["src/bot/**/*.test.ts", "src/bot/**/*.spec.ts"],
+  "exec": "tsx src/bot/index.ts",
+  "env": {
+    "NODE_ENV": "development"
+  }
+} 
