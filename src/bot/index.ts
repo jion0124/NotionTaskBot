@@ -14,6 +14,8 @@ import OpenAI from "openai";
 import { BotApiClient } from "../lib/bot-api-client";
 import { setupCommands, handleSetupCommand } from "../lib/setup-commands";
 import { errorHandler } from "../lib/error-handler";
+import fs from "fs";
+import path from "path";
 
 const DISCORD_TOKEN = process.env.DISCORD_BOT_TOKEN as string;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
@@ -209,7 +211,7 @@ client.on('interactionCreate', async interaction => {
         break;
       }
       case 'duetasks': {
-        const assignee = cmd.options.getString('assignee');
+        const assignee = cmd.options.getString('assignee') ?? undefined;
         const now = Date.now();
         const limit = now + 3*24*60*60*1000;
         const resp = await notion.databases.query({ 
@@ -228,7 +230,10 @@ client.on('interactionCreate', async interaction => {
         const lines = list.map((p,i) =>
           `• ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 担当: ${getAssignees(p).join(', ') || '-'} | 期限: ${getDueDate(p)}`
         );
-        await cmd.editReply([header, lines.join('\n') || '• 該当タスクはありません'].join('\n'));
+        const prompt = list.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 期限: ${getDueDate(p)} | 担当: ${getAssignees(p).join(', ')}`).join('\n');
+        const systemPrompt = loadPrompt("duetasks.txt", { assignee: assignee ?? "担当者" });
+        const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: systemPrompt + prompt }] });
+        await cmd.editReply([header, lines.join('\n') || '• 該当タスクはありません', '', ai.choices[0].message?.content ?? ''].join('\n'));
         break;
       }
       case 'advise': {
@@ -246,7 +251,8 @@ client.on('interactionCreate', async interaction => {
           break;
         }
         const prompt = list.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 期限: ${getDueDate(p)} | 担当: ${getAssignees(p).join(', ')}`).join('\n');
-        const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: `Tasks for ${assignee}:\n${prompt}\nAs a project manager, provide action items:` }] });
+        const systemPrompt = loadPrompt("advise.txt", { assignee });
+        const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: systemPrompt + prompt }] });
         await cmd.editReply([header, ai.choices[0].message?.content ?? ''].join('\n'));
         break;
       }
@@ -286,32 +292,43 @@ client.on('interactionCreate', async interaction => {
           break;
         }
         const prompt = pages.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 期限: ${getDueDate(p)} | 担当: ${getAssignees(p).join(', ')}`).join('\n');
-        const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: `Tasks due this week:\n${prompt}\nAs a PM, suggest next steps:` }] });
+        const systemPrompt = loadPrompt("weekadvise.txt");
+        const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: systemPrompt + prompt }] });
         await cmd.editReply([header, ai.choices[0].message?.content ?? ''].join('\n'));
         break;
       }
       case 'listassignees': {
         const resp = await notion.databases.query({ database_id: userConfig.notionDatabaseId, page_size: 10 });
         const pages = resp.results as Page[];
-        const header = '👥 Top 10 担当者:';
+        const header = '👥 上位10名の担当者:';
         const lines = pages.map((p,i) => `**${i+1}**. ${getAssignees(p).join(', ') || '-'}`);
-        await cmd.editReply([header, lines.join('\n') || 'None'].join('\n'));
+        await cmd.editReply([header, lines.join('\n') || '• 担当者が見つかりませんでした'].join('\n'));
         break;
       }
       case 'liststatus': {
         const resp = await notion.databases.query({ database_id: userConfig.notionDatabaseId, page_size: 10 });
         const pages = resp.results as Page[];
-        const header = '🔖 Top 10 ステータス:';
+        const header = '🔖 上位10件のステータス:';
         const lines = pages.map((p,i) => `**${i+1}**. ${getStatus(p) || '-'}`);
-        await cmd.editReply([header, lines.join('\n') || 'None'].join('\n'));
+        await cmd.editReply([header, lines.join('\n') || '• ステータスが見つかりませんでした'].join('\n'));
         break;
       }
     }
   } catch (e) {
     errorHandler.logError(e as Error, `command-execution-${cmd.commandName}`);
     errorDev(`❌ コマンド(${cmd.commandName})実行エラー:`, e);
-    await cmd.editReply('⚠️ コマンド実行中に予期せぬエラーが発生しました。内容を確認のうえ、再度お試しください。');
+    await cmd.editReply('⚠️ コマンド実行中に予期せぬエラーが発生しました。\n' + (e instanceof Error ? e.message + '\n' + (e.stack || '') : JSON.stringify(e)));
   }
 });
 
 client.login(DISCORD_TOKEN);
+
+// プロンプト読み込み関数
+function loadPrompt(filename: string, vars: Record<string, string> = {}) {
+  const filePath = path.join(__dirname, "prompts", filename);
+  let prompt = fs.readFileSync(filePath, "utf-8");
+  for (const [key, value] of Object.entries(vars)) {
+    prompt = prompt.replace(new RegExp(`\\{${key}\\}`, "g"), value);
+  }
+  return prompt;
+}
