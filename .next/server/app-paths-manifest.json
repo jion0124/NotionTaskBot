@@ -1,5 +1,4 @@
 {
   "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/[guildId]/notion/page": "app/dashboard/[guildId]/notion/page.js",
-  "/dashboard/[guildId]/page": "app/dashboard/[guildId]/page.js"
+  "/api/guilds/bot-status/route": "app/api/guilds/bot-status/route.js"
 }
