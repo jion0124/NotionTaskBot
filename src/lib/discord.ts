@@ -4,24 +4,15 @@ const DISCORD_CLIENT_ID = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID;
 
 // 動的にリダイレクトURIを設定
 function getRedirectUri(): string {
-  // 環境変数で明示的に設定されている場合はそれを使用
-  if (process.env.NEXT_PUBLIC_REDIRECT_URI) {
-    return process.env.NEXT_PUBLIC_REDIRECT_URI;
+  if (!process.env.NEXT_PUBLIC_REDIRECT_URI) {
+    throw new Error('NEXT_PUBLIC_REDIRECT_URIが未設定です');
   }
-  
-  // 開発環境では現在のポートを動的に取得
-  if (typeof window !== 'undefined') {
-    const port = window.location.port || '3000';
-    return `http://localhost:${port}/auth/callback`;
-  }
-  
-  // サーバーサイドではデフォルト値を使用
-  return 'http://localhost:3000/auth/callback';
+  return process.env.NEXT_PUBLIC_REDIRECT_URI;
 }
 
 const REDIRECT_URI = getRedirectUri();
 
-
+// ※NEXT_PUBLIC_APP_URLが未設定の場合は3000番ポートがデフォルト
 
 export async function exchangeCodeForToken(code: string): Promise<{
   access_token: string;

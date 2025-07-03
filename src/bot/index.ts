@@ -16,9 +16,13 @@ import { setupCommands, handleSetupCommand } from "../lib/setup-commands";
 import { errorHandler } from "../lib/error-handler";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
 const DISCORD_TOKEN = process.env.DISCORD_BOT_TOKEN as string;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY as string;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // 環境変数のチェック
 console.log('🔧 Bot起動時の環境変数チェック:');
@@ -93,8 +97,10 @@ const getDueDate = (pg: Page): string => {
 const commands = [
   ...setupCommands,
   new SlashCommandBuilder()
-    .setName("addtask").setDescription("Notionにタスクを追加")
-    .addStringOption(o => o.setName("content").setDescription("タスク内容").setRequired(true)),
+    .setName("addtask").setDescription("Notionにタスクを追加します")
+    .addStringOption(o => o.setName("content").setDescription("タスク内容（必須）").setRequired(true))
+    .addStringOption(o => o.setName("assignee").setDescription("担当者名（任意。Bot用プロパティに記録）").setRequired(false))
+    .addStringOption(o => o.setName("due").setDescription("期限（任意。YYYY-MM-DD形式）").setRequired(false)),
   new SlashCommandBuilder()
     .setName("mytasks").setDescription("指定担当者の未完了タスク一覧")
     .addStringOption(o => o.setName("assignee").setDescription("担当者名").setRequired(true)),
@@ -112,6 +118,11 @@ const commands = [
     .setName("listassignees").setDescription("上位10名の担当者を表示"),
   new SlashCommandBuilder()
     .setName("liststatus").setDescription("上位10件のステータスを表示"),
+  new SlashCommandBuilder()
+    .setName("overduetasks").setDescription("期限切れタスク一覧を表示")
+    .addStringOption(o => o.setName("assignee").setDescription("担当者名").setRequired(false)),
+  new SlashCommandBuilder()
+    .setName("projectadvice").setDescription("プロジェクト全体の進捗・課題・改善案をAIが提案"),
 ].map(c => c.toJSON());
 
 async function registerCommands() {
@@ -188,9 +199,20 @@ client.on('interactionCreate', async interaction => {
     switch (cmd.commandName) {
       case 'addtask': {
         const content = cmd.options.getString('content', true);
-        await notion.pages.create({ 
-          parent: { database_id: userConfig.notionDatabaseId }, 
-          properties: { 'タスク名': { title: [{ text: { content } }] } } 
+        const assignee = cmd.options.getString('assignee');
+        const due = cmd.options.getString('due');
+        const properties: any = {
+          'タスク名': { title: [{ text: { content } }] }
+        };
+        if (assignee) {
+          properties['担当者_Bot用'] = { rich_text: [{ text: { content: assignee } }] };
+        }
+        if (due) {
+          properties['期限'] = { date: { start: due } };
+        }
+        await notion.pages.create({
+          parent: { database_id: userConfig.notionDatabaseId },
+          properties
         });
         await cmd.editReply('✅ タスクを追加しました。');
         break;
@@ -233,7 +255,7 @@ client.on('interactionCreate', async interaction => {
         const prompt = list.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 期限: ${getDueDate(p)} | 担当: ${getAssignees(p).join(', ')}`).join('\n');
         const systemPrompt = loadPrompt("duetasks.txt", { assignee: assignee ?? "担当者" });
         const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: systemPrompt + prompt }] });
-        await cmd.editReply([header, lines.join('\n') || '• 該当タスクはありません', '', ai.choices[0].message?.content ?? ''].join('\n'));
+        await cmd.editReply([header, lines.join('\n') || '• 該当タスクはありません', '', trimDiscordMessage(ai.choices[0].message?.content ?? '')].join('\n'));
         break;
       }
       case 'advise': {
@@ -253,7 +275,7 @@ client.on('interactionCreate', async interaction => {
         const prompt = list.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 期限: ${getDueDate(p)} | 担当: ${getAssignees(p).join(', ')}`).join('\n');
         const systemPrompt = loadPrompt("advise.txt", { assignee });
         const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: systemPrompt + prompt }] });
-        await cmd.editReply([header, ai.choices[0].message?.content ?? ''].join('\n'));
+        await cmd.editReply([header, trimDiscordMessage(ai.choices[0].message?.content ?? '')].join('\n'));
         break;
       }
       case 'weekprogress': {
@@ -294,7 +316,7 @@ client.on('interactionCreate', async interaction => {
         const prompt = pages.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 期限: ${getDueDate(p)} | 担当: ${getAssignees(p).join(', ')}`).join('\n');
         const systemPrompt = loadPrompt("weekadvise.txt");
         const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: systemPrompt + prompt }] });
-        await cmd.editReply([header, ai.choices[0].message?.content ?? ''].join('\n'));
+        await cmd.editReply([header, trimDiscordMessage(ai.choices[0].message?.content ?? '')].join('\n'));
         break;
       }
       case 'listassignees': {
@@ -311,6 +333,41 @@ client.on('interactionCreate', async interaction => {
         const header = '🔖 上位10件のステータス:';
         const lines = pages.map((p,i) => `**${i+1}**. ${getStatus(p) || '-'}`);
         await cmd.editReply([header, lines.join('\n') || '• ステータスが見つかりませんでした'].join('\n'));
+        break;
+      }
+      case 'overduetasks': {
+        const assignee = cmd.options.getString('assignee') ?? undefined;
+        const now = Date.now();
+        const resp = await notion.databases.query({
+          database_id: userConfig.notionDatabaseId,
+          filter: { property: 'ステータス', status: { does_not_equal: '完了' } },
+          page_size: 100
+        });
+        const pages = resp.results as Page[];
+        const header = assignee
+          ? `⏰ **${assignee}** の期限切れタスク一覧:`
+          : '⏰ 期限切れタスク一覧:';
+        const list = pages.filter(p => {
+          const t = Date.parse(getDueDate(p));
+          return !isNaN(t) && t < now && (!assignee || getAssignees(p).includes(assignee));
+        });
+        const lines = list.map((p,i) =>
+          `• ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | 担当: ${getAssignees(p).join(', ') || '-'} | 期限: ${getDueDate(p)}`
+        );
+        await cmd.editReply([header, lines.join('\n') || '• 期限切れタスクはありません'].join('\n'));
+        break;
+      }
+      case 'projectadvice': {
+        const resp = await notion.databases.query({
+          database_id: userConfig.notionDatabaseId,
+          page_size: 100
+        });
+        const pages = resp.results as Page[];
+        const header = '📝 プロジェクト全体へのアドバイス・改善案:';
+        const prompt = pages.map((p,i) => `${i+1}. ${p.properties['タスク名'].title[0]?.plain_text ?? ''} | ステータス: ${getStatus(p)} | 担当: ${getAssignees(p).join(', ') || '-'} | 期限: ${getDueDate(p)}`).join('\n');
+        const systemPrompt = loadPrompt("projectadvice.txt");
+        const ai = await openai.chat.completions.create({ model: 'gpt-4.1-nano', messages: [{ role: 'user', content: systemPrompt + prompt }] });
+        await cmd.editReply([header, trimDiscordMessage(ai.choices[0].message?.content ?? '')].join('\n'));
         break;
       }
     }
@@ -331,4 +388,9 @@ function loadPrompt(filename: string, vars: Record<string, string> = {}) {
     prompt = prompt.replace(new RegExp(`\\{${key}\\}`, "g"), value);
   }
   return prompt;
+}
+
+function trimDiscordMessage(content: string, maxLength = 2000) {
+  if (content.length <= maxLength) return content;
+  return content.slice(0, maxLength - 8) + "\n…（省略）";
 }

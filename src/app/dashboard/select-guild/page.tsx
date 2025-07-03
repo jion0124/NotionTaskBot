@@ -191,7 +191,7 @@ export default function SelectGuildPage() {
   // Bot招待処理（API経由で保存）
   const inviteBot = useCallback(async (guild: GuildWithBotStatus) => {
     try {
-      const redirectUri = `${window.location.origin}/dashboard/bot-callback`;
+      const redirectUri = `${window.location.origin}/auth/callback`;
       const state = guild.id;
       const inviteUrl = generateBotInviteUrl(guild.id, redirectUri, state);
       
