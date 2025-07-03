@@ -1,4 +1,14 @@
 {
-  "/api/bot/guilds/[guildId]/config/check/route": "app/api/bot/guilds/[guildId]/config/check/route.js",
-  "/api/bot/guilds/[guildId]/config/route": "app/api/bot/guilds/[guildId]/config/route.js"
+  "/dashboard/page": "app/dashboard/page.js",
+  "/dashboard/select-guild/page": "app/dashboard/select-guild/page.js",
+  "/dashboard/[guildId]/page": "app/dashboard/[guildId]/page.js",
+  "/auth/login/page": "app/auth/login/page.js",
+  "/dashboard/bot-callback/page": "app/dashboard/bot-callback/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/guilds/bot-status/route": "app/api/guilds/bot-status/route.js",
+  "/api/guilds/route": "app/api/guilds/route.js",
+  "/auth/callback/page": "app/auth/callback/page.js",
+  "/api/bot-callback/route": "app/api/bot-callback/route.js",
+  "/api/guilds/[guildId]/route": "app/api/guilds/[guildId]/route.js",
+  "/dashboard/[guildId]/notion/page": "app/dashboard/[guildId]/notion/page.js"
 }

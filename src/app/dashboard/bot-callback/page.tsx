@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import LoadingSpinner from '@/components/ui/loading-spinner';
@@ -12,8 +13,8 @@ import { useCookie } from '@/hooks/useCookie';
 export default function BotCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const guildId = searchParams.get('state');
   const { getCookie, deleteCookie } = useCookie();
+  const guildId: string | null = searchParams.get('state');
   const [status, setStatus] = useState<'checking' | 'success' | 'error'>('checking');
   const [error, setError] = useState<string | null>(null);
   const [guildName, setGuildName] = useState<string | null>(null);
@@ -128,39 +129,30 @@ export default function BotCallbackPage() {
           throw new Error('このサーバーで管理者権限がありません。Botを追加するには管理者権限が必要です。');
         }
         
-        // Bot確認は削除（Botが追加される前なので確認できない）
-        setProgress(70);
-        
-        // DBに登録
+        // Bot確認やトークン参照は削除
+        setProgress(60);
+        // DBに登録（API経由）
         setProgress(85);
-        const saveRes = await fetch('/api/guilds', {
+        const apiRes = await fetch('/api/bot-callback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify({
+            code: searchParams.get('code'),
+            state: searchParams.get('state'),
             guild_id: guildId,
             guild_name: targetGuild.name || 'Unknown Guild',
-            bot_client_id: process.env.NEXT_PUBLIC_BOT_CLIENT_ID,
           }),
         });
-        
-        if (!saveRes.ok) {
-          const errorData = await saveRes.json();
-          
-          if (errorData.error?.includes('duplicate')) {
-            setStatus('success');
-          } else {
-            setStatus('error');
-            setError(`サーバー情報の登録に失敗しました: ${errorData.error || '不明なエラー'}`);
-            return;
-          }
-        } else {
-          setStatus('success');
+        const apiData = await apiRes.json();
+        if (!apiRes.ok || !apiData.success) {
+          setStatus('error');
+          setError(apiData.error || 'Bot追加・DB登録に失敗しました');
+          return;
         }
-        
+        setStatus('success');
         setProgress(100);
         clearInterval(progressInterval);
-        
-        // ダッシュボードにリダイレクト
         setTimeout(() => {
           router.replace('/dashboard');
         }, 3000);

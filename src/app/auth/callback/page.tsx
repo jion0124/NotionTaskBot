@@ -29,14 +29,13 @@ export default function AuthCallbackPage() {
       }
 
       try {
-        // API Routeにリダイレクト
-        const apiUrl = new URL('/api/auth/callback', window.location.origin);
-        apiUrl.searchParams.set('code', code);
+        // bot-callbackページにリダイレクト
+        const botCallbackUrl = new URL('/dashboard/bot-callback', window.location.origin);
+        botCallbackUrl.searchParams.set('code', code);
         if (state) {
-          apiUrl.searchParams.set('state', state);
+          botCallbackUrl.searchParams.set('state', state);
         }
-        
-        window.location.href = apiUrl.toString();
+        window.location.href = botCallbackUrl.toString();
       } catch (err) {
         setStatus('error');
         setError('認証処理中にエラーが発生しました');

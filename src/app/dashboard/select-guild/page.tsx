@@ -194,7 +194,31 @@ export default function SelectGuildPage() {
       const redirectUri = `${window.location.origin}/auth/callback`;
       const state = guild.id;
       const inviteUrl = generateBotInviteUrl(guild.id, redirectUri, state);
-      
+
+      // デバッグ用ログ
+      console.log('【Bot招待URL生成】');
+      console.log('client_id:', process.env.NEXT_PUBLIC_BOT_CLIENT_ID);
+      console.log('permissions:', '2147483648');
+      console.log('scope:', 'bot applications.commands');
+      console.log('guild_id:', guild.id);
+      console.log('redirect_uri:', redirectUri);
+      console.log('state:', state);
+      console.log('生成されたURL:', inviteUrl);
+
+      // URLの必須パラメータチェック
+      if (!inviteUrl.includes('client_id=')) {
+        setError('BotのクライアントIDがURLに含まれていません。環境変数を確認してください。');
+        return;
+      }
+      if (!inviteUrl.includes('scope=bot') || !inviteUrl.includes('applications.commands')) {
+        setError('scopeパラメータが不正です。botとapplications.commandsが必要です。');
+        return;
+      }
+      if (!inviteUrl.includes('permissions=')) {
+        setError('permissionsパラメータがURLに含まれていません。');
+        return;
+      }
+
       window.location.href = inviteUrl;
     } catch (err) {
       setError('Bot招待URLの生成に失敗しました。環境変数や設定を確認してください。');

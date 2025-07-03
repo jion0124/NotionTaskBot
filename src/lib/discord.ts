@@ -278,15 +278,15 @@ export async function getDiscordGuilds(accessToken: string): Promise<Array<{
 export function generateBotInviteUrl(clientId: string, guildId?: string): string {
   if (!clientId) {
     throw errorHandler.createError(
-      'Bot Client ID is required',
+      'BotのクライアントIDが設定されていません',
       'VALIDATION_ERROR'
     );
   }
 
   const params = new URLSearchParams({
     client_id: clientId,
-    permissions: '2147483648', // Administrator permission
-    scope: 'bot',
+    permissions: '2147483648', // 管理者権限
+    scope: 'bot applications.commands',
     ...(guildId && { guild_id: guildId }),
   });
 
