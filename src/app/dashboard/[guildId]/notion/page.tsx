@@ -236,7 +236,7 @@ const notionApi = {
 
   async saveGuildSettings(guildId: string, settings: Partial<GuildConfig>): Promise<ApiResponse<GuildConfig>> {
     const response = await apiFetch<ApiResponse<GuildConfig>>('/api/guilds', {
-      method: 'PUT',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ guild_id: guildId, ...settings }),
     });

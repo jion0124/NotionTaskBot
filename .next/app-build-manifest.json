@@ -31,15 +31,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/auth/login/page.js"
     ],
-    "/auth/callback/page": [
+    "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/auth/callback/page.js"
+      "static/chunks/app/dashboard/page.js"
     ],
-    "/dashboard/bot-callback/page": [
+    "/dashboard/[guildId]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/bot-callback/page.js"
+      "static/chunks/app/dashboard/[guildId]/page.js"
+    ],
+    "/dashboard/[guildId]/notion/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/[guildId]/notion/page.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }
