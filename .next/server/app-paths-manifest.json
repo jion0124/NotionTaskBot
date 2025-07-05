@@ -1,7 +1,7 @@
 {
   "/dashboard/page": "app/dashboard/page.js",
-  "/api/guilds/[guildId]/route": "app/api/guilds/[guildId]/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
   "/dashboard/[guildId]/page": "app/dashboard/[guildId]/page.js",
-  "/dashboard/[guildId]/notion/page": "app/dashboard/[guildId]/notion/page.js"
+  "/dashboard/[guildId]/notion/page": "app/dashboard/[guildId]/notion/page.js",
+  "/api/guilds/[guildId]/route": "app/api/guilds/[guildId]/route.js",
+  "/api/guilds/route": "app/api/guilds/route.js"
 }
