@@ -29,13 +29,17 @@ export default function AuthCallbackPage() {
       }
 
       try {
-        // bot-callbackページにリダイレクト
-        const botCallbackUrl = new URL('/dashboard/bot-callback', window.location.origin);
-        botCallbackUrl.searchParams.set('code', code);
+        // stateパラメータがある場合のみBot追加フローと判断
         if (state) {
+          // Bot追加フローの場合のみbot-callbackページにリダイレクト
+          const botCallbackUrl = new URL('/dashboard/bot-callback', window.location.origin);
+          botCallbackUrl.searchParams.set('code', code);
           botCallbackUrl.searchParams.set('state', state);
+          window.location.href = botCallbackUrl.toString();
+        } else {
+          // Discordログイン認証の場合は直接dashboardにリダイレクト
+          window.location.href = '/dashboard';
         }
-        window.location.href = botCallbackUrl.toString();
       } catch (err) {
         setStatus('error');
         setError('認証処理中にエラーが発生しました');

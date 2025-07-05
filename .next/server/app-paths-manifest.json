@@ -1,8 +1,5 @@
 {
-  "/dashboard/select-guild/page": "app/dashboard/select-guild/page.js",
-  "/dashboard/[guildId]/page": "app/dashboard/[guildId]/page.js",
+  "/page": "app/page.js",
   "/auth/login/page": "app/auth/login/page.js",
-  "/dashboard/bot-callback/page": "app/dashboard/bot-callback/page.js",
-  "/api/guilds/[guildId]/route": "app/api/guilds/[guildId]/route.js",
-  "/dashboard/[guildId]/notion/page": "app/dashboard/[guildId]/notion/page.js"
+  "/dashboard/bot-callback/page": "app/dashboard/bot-callback/page.js"
 }
